@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 
 import { currencyFilter, pluralize } from '../util';
 import { CategoriesChart } from '.';
@@ -43,6 +43,42 @@ export default function SpendingInsights(props: Props) {
     }, {});
   }, [monthlyTransactions]);
 
+
+  const [fetchedData, setFetchedData] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await fetch('https://api.runpod.ai/v2/tdmt8s9x4q81uh/runsync', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer <insert>'
+        },
+        body: JSON.stringify({
+          'input': {
+            'prompt': `Hello, categorize these expenses into "Business" or "Personal". The transactions are ${transactions}`
+          }
+        })
+      });
+      const data = await response.json();
+      console.log("HELLLLLLLLLLLLO after response");
+      console.log(data);
+      const personalExpenses = data;
+      setFetchedData(data);
+    };
+  
+    fetchData();
+  }, []);
+
+  const personalExpenses = async () => {
+    if(!fetchedData) {
+      return "loading...";
+    }
+
+    return await fetchedData;
+  }
+  
+  
   const namesObject = useMemo((): Categories => {
     return monthlyTransactions.reduce((obj: Categories, tx) => {
       tx.name in obj
@@ -62,7 +98,7 @@ export default function SpendingInsights(props: Props) {
     namesArray.splice(5); // top 5
     return namesArray;
   }, [namesObject]);
-
+  
   return (
     <div>
       <h2 className="monthlySpendingHeading">Monthly Spending</h2>
@@ -71,14 +107,25 @@ export default function SpendingInsights(props: Props) {
         props.numOfItems
       } bank ${pluralize('account', props.numOfItems)}`}</div>
       <div className="monthlySpendingContainer">
-        <div className="userDataBox">
-          <CategoriesChart categories={categoriesObject} />
+      <div className="userDataBox">
+          <div className="holdingsList">
+            <h4 className="holdingsHeading">Personal Expenses {personalExpenses}</h4>
+            <div className="spendingInsightData">
+              <p className="title">Expense</p> <p className="title">Amount</p>
+              {sortedNames.map((vendor: any[]) => (
+                <>
+                  <p>{vendor[0]}</p>
+                  <p>{currencyFilter(vendor[1])}</p>
+                </>
+              ))}
+            </div>
+          </div>
         </div>
         <div className="userDataBox">
           <div className="holdingsList">
-            <h4 className="holdingsHeading">Top 5 Vendors</h4>
+            <h4 className="holdingsHeading">Business Expenses</h4>
             <div className="spendingInsightData">
-              <p className="title">Vendor</p> <p className="title">Amount</p>
+              <p className="title">Expense</p> <p className="title">Amount</p>
               {sortedNames.map((vendor: any[]) => (
                 <>
                   <p>{vendor[0]}</p>

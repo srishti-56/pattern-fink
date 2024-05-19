@@ -17,6 +17,8 @@ const {
   PLAID_ENV,
   PLAID_SECRET_DEVELOPMENT,
   PLAID_SECRET_SANDBOX,
+  RUNPOD_API_KEY,
+  ENDPOINT_ID
 } = process.env;
 
 // The Plaid secret is unique per environment. Note that there is also a separate production key,

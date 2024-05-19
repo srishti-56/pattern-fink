@@ -19,6 +19,7 @@
     "node-fetch": "^2.3.0",
     "pg": "^8.7.1",
     "plaid": "^10.3.0",
+    "runpod-sdk": "^1.0.7",
     "socket.io": "^2.2.0"
   },
   "devDependencies": {
