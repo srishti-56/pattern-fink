@@ -45,9 +45,12 @@ export default function SpendingInsights(props: Props) {
 
 
   const [fetchedData, setFetchedData] = useState(null);
+  const [personalExpenses, setPersonalExpenses] = useState("loading...");
 
   useEffect(() => {
     const fetchData = async () => {
+      const reducedTransactions = monthlyTransactions.slice(0, 2);
+      console.log(`Categorize these expenses into "Business" or "Personal". The transactions are ${reducedTransactions.map(tx => `${tx.amount} ${tx.name}`).join(' END | START ')}. Expected output: a list of {Transaction name: Personal or Business}. Output: `);
       const response = await fetch('https://api.runpod.ai/v2/tdmt8s9x4q81uh/runsync', {
         method: 'POST',
         headers: {
@@ -56,27 +59,19 @@ export default function SpendingInsights(props: Props) {
         },
         body: JSON.stringify({
           'input': {
-            'prompt': `Hello, categorize these expenses into "Business" or "Personal". The transactions are ${transactions}`
+            'prompt': `Categorize into 'Business' or 'Personal'. The transactions are ${reducedTransactions.map(tx => `${tx.amount} ${tx.name}`).join(' END | START ')}. Expected output: a list of {Transaction name: Personal or Business}. Output: {`,
           }
         })
       });
       const data = await response.json();
       console.log("HELLLLLLLLLLLLO after response");
       console.log(data);
-      const personalExpenses = data;
-      setFetchedData(data);
+      setFetchedData(data.id);
+      setPersonalExpenses(data.id);
     };
   
     fetchData();
   }, []);
-
-  const personalExpenses = async () => {
-    if(!fetchedData) {
-      return "loading...";
-    }
-
-    return await fetchedData;
-  }
   
   
   const namesObject = useMemo((): Categories => {
@@ -98,44 +93,75 @@ export default function SpendingInsights(props: Props) {
     namesArray.splice(5); // top 5
     return namesArray;
   }, [namesObject]);
+
+
+  const ChatComponent = () => {
+    const [messages, setMessages] = useState<string[]>([]);
+    const [input, setInput] = useState('');
+  
+    const handleSend = () => {
+      setMessages([...messages, input]);
+      setInput('');
+      setMessages([...messages, "loading..."]);
+    };
+  
+    return (
+      <div>
+        <div>
+          {messages.map((message, index) => (
+            <p key={index}>{message}</p>
+          ))}
+        </div>
+        <input value={input} onChange={e => setInput(e.target.value)} />
+        <button onClick={handleSend}>Send</button>
+      </div>
+    );
+  };
+  
   
   return (
     <div>
-      <h2 className="monthlySpendingHeading">Monthly Spending</h2>
-      <h4 className="tableSubHeading">A breakdown of your monthly spending</h4>
-      <div className="monthlySpendingText">{`Monthly breakdown across ${
-        props.numOfItems
-      } bank ${pluralize('account', props.numOfItems)}`}</div>
-      <div className="monthlySpendingContainer">
-      <div className="userDataBox">
-          <div className="holdingsList">
-            <h4 className="holdingsHeading">Personal Expenses {personalExpenses}</h4>
-            <div className="spendingInsightData">
-              <p className="title">Expense</p> <p className="title">Amount</p>
-              {sortedNames.map((vendor: any[]) => (
-                <>
-                  <p>{vendor[0]}</p>
-                  <p>{currencyFilter(vendor[1])}</p>
-                </>
-              ))}
+      <div>
+      <h4 className="holdingsHeading">Hi! Let's categorize your latest expenses</h4>
+      <ChatComponent />
+      </div>
+      <div>
+        <h2 className="monthlySpendingHeading">Monthly Spending</h2>
+        <h4 className="tableSubHeading">A breakdown of your monthly spending</h4>
+        <div className="monthlySpendingText">{`Monthly breakdown across ${
+          props.numOfItems
+        } bank ${pluralize('account', props.numOfItems)}`}</div> 
+        <div className="monthlySpendingContainer">
+        <div className="userDataBox">
+            <div className="holdingsList">
+              <h4 className="holdingsHeading">Personal Expenses {personalExpenses}</h4>
+              <div className="spendingInsightData">
+                <p className="title">Expense</p> <p className="title">Amount</p>
+                {sortedNames.map((vendor: any[]) => (
+                  <>
+                    <p>{vendor[0]}</p>
+                    <p>{currencyFilter(vendor[1])}</p>
+                  </>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
-        <div className="userDataBox">
-          <div className="holdingsList">
-            <h4 className="holdingsHeading">Business Expenses</h4>
-            <div className="spendingInsightData">
-              <p className="title">Expense</p> <p className="title">Amount</p>
-              {sortedNames.map((vendor: any[]) => (
-                <>
-                  <p>{vendor[0]}</p>
-                  <p>{currencyFilter(vendor[1])}</p>
-                </>
-              ))}
+          <div className="userDataBox">
+            <div className="holdingsList">
+              <h4 className="holdingsHeading">Business Expenses</h4>
+              <div className="spendingInsightData">
+                <p className="title">Expense</p> <p className="title">Amount</p>
+                {sortedNames.map((vendor: any[]) => (
+                  <>
+                    <p>{vendor[0]}</p>
+                    <p>{currencyFilter(vendor[1])}</p>
+                  </>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+      </div>
   );
 }
