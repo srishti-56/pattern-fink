@@ -59,7 +59,7 @@ export default function SpendingInsights(props: Props) {
         },
         body: JSON.stringify({
           'input': {
-            'prompt': `Categorize into 'Business' or 'Personal'. The transactions are ${reducedTransactions.map(tx => `${tx.amount} ${tx.name}`).join(' END | START ')}. Expected output: a list of {Transaction name: Personal or Business}. Output: {`,
+            'prompt': `Categorize this expense into 'Business' or 'Personal'. The transactions are ${reducedTransactions.map(tx => `${tx.amount} ${tx.name}`).join(' END | START ')}. Return a single word: 'Business' or 'Personal'.`,
           }
         })
       });
@@ -102,19 +102,21 @@ export default function SpendingInsights(props: Props) {
     const handleSend = () => {
       setMessages([...messages, input]);
       setInput('');
-      setMessages([...messages, "loading..."]);
     };
   
     return (
-      <div>
-        <div>
-          {messages.map((message, index) => (
-            <p key={index}>{message}</p>
-          ))}
-        </div>
-        <input value={input} onChange={e => setInput(e.target.value)} />
-        <button onClick={handleSend}>Send</button>
+      <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+      <div style={{ height: '200px', overflowY: 'scroll', padding: '10px', marginBottom: '10px' }}>
+        {messages.map((message, index) => (
+          <p key={index} style={{ background: '#f9f9f9', padding: '5px', borderRadius: '5px', margin: '10px 0' }}>{message}</p>
+        ))}
       </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <input value={input} onChange={e => setInput(e.target.value)} style={{ flex: '1', marginRight: '10px', padding: '5px' }} />
+        <button onClick={handleSend} style={{ padding: '5px 10px', background: '#007BFF', color: 'white', border: 'none', borderRadius: '5px' }}>Send</button>
+      </div>
+      </div>
+
     );
   };
   
