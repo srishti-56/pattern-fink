@@ -44,30 +44,35 @@ export default function SpendingInsights(props: Props) {
   }, [monthlyTransactions]);
 
 
-  const [fetchedData, setFetchedData] = useState(null);
-  const [personalExpenses, setPersonalExpenses] = useState("loading...");
+  const [fetchedData, setFetchedData] = useState<string[]>([]);
+  const [personalExpenses, setPersonalExpenses] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
-      const reducedTransactions = monthlyTransactions.slice(0, 2);
-      console.log(`Categorize these expenses into "Business" or "Personal". The transactions are ${reducedTransactions.map(tx => `${tx.amount} ${tx.name}`).join(' END | START ')}. Expected output: a list of {Transaction name: Personal or Business}. Output: `);
-      const response = await fetch('https://api.runpod.ai/v2/tdmt8s9x4q81uh/runsync', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer <insert>'
-        },
-        body: JSON.stringify({
-          'input': {
-            'prompt': `Categorize this expense into 'Business' or 'Personal'. The transactions are ${reducedTransactions.map(tx => `${tx.amount} ${tx.name}`).join(' END | START ')}. Return a single word: 'Business' or 'Personal'.`,
-          }
-        })
-      });
-      const data = await response.json();
-      console.log("HELLLLLLLLLLLLO after response");
-      console.log(data);
-      setFetchedData(data.id);
-      setPersonalExpenses(data.id);
+      let results = [];
+      const reducedTransactions = monthlyTransactions.slice(0, 5);
+      for (let txn of reducedTransactions) {
+        console.log(txn);
+        console.log(`Categorize this expense into "Business" or "Personal". Trasanction: ${txn.name}. Return a single word: 'Business' or 'Personal'. Output:`);
+        const response = await fetch('https://api.runpod.ai/v2/tdmt8s9x4q81uh/runsync', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer <insert>'
+          },
+          body: JSON.stringify({
+            'input': {
+              'prompt': `Categorize this expense into "Business" or "Personal". Trasanction: ${txn.name}. Respond with a single word: Business or Personal. Start: `,
+            }
+          })
+        });
+        const data = await response.json();
+        results.push(data.output['text']);
+        console.log("HELLLLLLLLLLLLO after response");
+        console.log(data);
+      }
+      setFetchedData(results);
+      setPersonalExpenses(results);
     };
   
     fetchData();
@@ -84,7 +89,7 @@ export default function SpendingInsights(props: Props) {
   }, [monthlyTransactions]);
 
   // sort names by spending totals
-  const sortedNames = useMemo(() => {
+  const sortedNamesP = useMemo(() => {
     const namesArray = [];
     for (const name in namesObject) {
       namesArray.push([name, namesObject[name]]);
@@ -94,6 +99,15 @@ export default function SpendingInsights(props: Props) {
     return namesArray;
   }, [namesObject]);
 
+  const sortedNamesB = useMemo(() => {
+    const namesArray = [];
+    for (const name in namesObject) {
+      namesArray.push([name, namesObject[name]]);
+    }
+    namesArray.sort((a: any[], b: any[]) => b[1] - a[1]);
+    // namesArray.slice(5,10); // top 5
+    return namesArray.slice(5,9);
+  }, [namesObject]);
 
   const ChatComponent = () => {
     const [messages, setMessages] = useState<string[]>([]);
@@ -120,7 +134,6 @@ export default function SpendingInsights(props: Props) {
     );
   };
   
-  
   return (
     <div>
       <div>
@@ -136,10 +149,10 @@ export default function SpendingInsights(props: Props) {
         <div className="monthlySpendingContainer">
         <div className="userDataBox">
             <div className="holdingsList">
-              <h4 className="holdingsHeading">Personal Expenses {personalExpenses}</h4>
+              <h4 className="holdingsHeading">Personal Expenses</h4>
               <div className="spendingInsightData">
                 <p className="title">Expense</p> <p className="title">Amount</p>
-                {sortedNames.map((vendor: any[]) => (
+                {sortedNamesB.map((vendor: any[]) => (
                   <>
                     <p>{vendor[0]}</p>
                     <p>{currencyFilter(vendor[1])}</p>
@@ -153,7 +166,7 @@ export default function SpendingInsights(props: Props) {
               <h4 className="holdingsHeading">Business Expenses</h4>
               <div className="spendingInsightData">
                 <p className="title">Expense</p> <p className="title">Amount</p>
-                {sortedNames.map((vendor: any[]) => (
+                {sortedNamesP.map((vendor: any[]) => (
                   <>
                     <p>{vendor[0]}</p>
                     <p>{currencyFilter(vendor[1])}</p>
