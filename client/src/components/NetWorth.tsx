@@ -58,7 +58,7 @@ export default function NetWorth(props: Props) {
           } bank ${pluralize('account', props.numOfItems)}`}</div>
           <h2 className="netWorthDollars">
             {currencyFilter(assets - liabilities)}
-          </h2>
+          </h2>      
           <div className="holdingsContainer">
             <div className="userDataBox">
               <div className="holdingsList">
