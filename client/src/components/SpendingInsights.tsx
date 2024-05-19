@@ -109,6 +109,26 @@ export default function SpendingInsights(props: Props) {
     return namesArray.slice(5,9);
   }, [namesObject]);
 
+  const sortedNamesAmazonP = useMemo(() => {
+    const namesArray = [];
+    for (const name in namesObject) {
+      namesArray.push([name, namesObject[name]]);
+    }
+    // namesArray.sort((a: any[], b: any[]) => b[1] - a[1]);
+    // namesArray.slice(5,10); // top 5
+    return namesArray.slice(22,24);
+  }, [namesObject]);
+
+  const sortedNamesAmazonB = useMemo(() => {
+    const namesArray = [];
+    for (const name in namesObject) {
+      namesArray.push([name, namesObject[name]]);
+    }
+    // namesArray.sort((a: any[], b: any[]) => b[1] - a[1]);
+    // namesArray.slice(5,10); // top 5
+    return namesArray.slice(15,16);
+  }, [namesObject]);
+
   const ChatComponent = () => {
     const [messages, setMessages] = useState<string[]>([]);
     const [input, setInput] = useState('');
@@ -136,8 +156,10 @@ export default function SpendingInsights(props: Props) {
   
   return (
     <div>
+      <br></br>
+      <br></br>
       <div>
-      <h4 className="holdingsHeading">Hi! Let's categorize your latest expenses</h4>
+      <h4 className="holdingsHeading">Welcome to FinFast! Let's categorize your latest expenses</h4>
       <ChatComponent />
       </div>
       <div>
@@ -177,6 +199,45 @@ export default function SpendingInsights(props: Props) {
           </div>
         </div>
       </div>
+
+      <div>
+        <h2 className="monthlySpendingHeading">Amazon Orders</h2>
+        <h4 className="tableSubHeading">Import your Amazon orders</h4>
+        <div className="monthlySpendingText">{`Monthly breakdown across ${
+          props.numOfItems
+        } Amazon ${pluralize('account', props.numOfItems)}`}</div> 
+        <div className="monthlySpendingContainer">
+        <div className="userDataBox">
+            <div className="holdingsList">
+              <h4 className="holdingsHeading">Personal Expenses</h4>
+              <div className="spendingInsightData">
+                <p className="title">Expense</p> <p className="title">Amount</p>
+                {sortedNamesAmazonP.map((vendor: any[]) => (
+                  <>
+                    <p>{vendor[0]}</p>
+                    <p>{currencyFilter(vendor[1])}</p>
+                  </>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="userDataBox">
+            <div className="holdingsList">
+              <h4 className="holdingsHeading">Business Expenses</h4>
+              <div className="spendingInsightData">
+                <p className="title">Expense</p> <p className="title">Amount</p>
+                {sortedNamesAmazonB.map((vendor: any[]) => (
+                  <>
+                    <p>{vendor[0]}</p>
+                    <p>{currencyFilter(vendor[1])}</p>
+                  </>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       </div>
   );
 }
